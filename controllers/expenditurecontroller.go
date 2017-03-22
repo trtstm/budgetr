@@ -121,7 +121,7 @@ func (c *expenditureController) Show(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusNotFound)
 	}
 
-	log.Infof("ExpenditureController::Show Returning expenditure '%d'.", id)
+	log.Infof("ExpenditureController::Show Returning expenditure: %+v.", expenditure)
 	return ctx.JSON(http.StatusOK, TransformExpenditure(expenditure)[0])
 }
 
@@ -158,7 +158,7 @@ func (c *expenditureController) Create(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 
-	log.Infof("ExpenditureController::Create Expenditure '%d' created.", expenditure.ID)
+	log.Infof("ExpenditureController::Create Expenditure created: %+v.", expenditure)
 	return ctx.JSON(http.StatusCreated, TransformExpenditure(expenditure)[0])
 }
 
@@ -202,13 +202,23 @@ func (c *expenditureController) Update(ctx echo.Context) error {
 		}
 	}
 
-	if q := db.DB.Model(expenditure).Updates(&models.Expenditure{Amount: params.Amount, Date: params.Date, Category: category}); q.Error != nil {
+	expenditure.Amount = params.Amount
+	expenditure.Date = params.Date
+	expenditure.Category = category
+
+	q := db.DB.Save(expenditure)
+	if q.Error != nil {
 		log.Errorf("ExpenditureController::Update Update failed: '%v'.", q.Error)
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 
-	log.Infof("ExpenditureController::Update Expenditure '%d' updated.", id)
-	return ctx.JSON(http.StatusCreated, TransformExpenditure(expenditure)[0])
+	if q.RowsAffected == 0 {
+		log.Infof("ExpenditureController::Update No rows updated")
+		return ctx.NoContent(http.StatusNotFound)
+	}
+
+	log.Infof("ExpenditureController::Update Expenditure updated: %+v.", expenditure)
+	return ctx.JSON(http.StatusOK, TransformExpenditure(expenditure)[0])
 }
 
 func (c *expenditureController) Delete(ctx echo.Context) error {
