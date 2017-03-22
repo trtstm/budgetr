@@ -58,9 +58,9 @@ func sortQuery(cs *colSort, q *gorm.DB) *gorm.DB {
 	return q.Order(cs.col + " " + cs.order)
 }
 
-func limitQuery(limit string, q *gorm.DB) (uint, *gorm.DB) {
-	n, err := strconv.ParseUint(limit, 10, 64)
-	if err != nil {
+func limitQuery(limit uint, q *gorm.DB) (uint, *gorm.DB) {
+	n := limit
+	if n == 0 {
 		n = 100
 	}
 
@@ -71,13 +71,14 @@ func limitQuery(limit string, q *gorm.DB) (uint, *gorm.DB) {
 	return uint(n), q.Limit(uint(n))
 }
 
-func offsetQuery(offset string, q *gorm.DB) (uint, *gorm.DB) {
-	n, err := strconv.ParseUint(offset, 10, 64)
-	if err != nil {
-		n = 0
-	}
+func offsetQuery(offset uint, q *gorm.DB) (uint, *gorm.DB) {
+	n := offset
 
 	return uint(n), q.Offset(uint(n))
+}
+
+func dateRangeQuery(start time.Time, end time.Time, q *gorm.DB) *gorm.DB {
+	return q.Where("date >= ? AND date < ?", start, end)
 }
 
 type expenditureController struct {
@@ -86,13 +87,43 @@ type expenditureController struct {
 func (c *expenditureController) Index(ctx echo.Context) error {
 	expenditures := []*models.Expenditure{}
 
+	params := &struct {
+		Limit  uint `json:"limit" form:"limit" query:"limit"`
+		Offset uint `json:"offset" form:"offset" query:"offset"`
+	}{}
+
+	if err := ctx.Bind(params); err != nil {
+		log.Infof("ExpenditureController::Index Could not bind params: '%v'.", err)
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
 	var limit uint
 	var offset uint
 
 	q := db.DB.Preload("Category")
+
+	var start time.Time
+	var end time.Time
+	if len(ctx.QueryParam("start")) > 0 && len(ctx.QueryParam("end")) > 0 {
+		var err error
+		start, err = time.Parse(time.RFC3339, ctx.QueryParam("start"))
+		if err != nil {
+			log.Infof("ExpenditureController::Index Could not parse start: '%v'.", err)
+		}
+		end, err = time.Parse(time.RFC3339, ctx.QueryParam("end"))
+		if err != nil {
+			log.Infof("ExpenditureController::Index Could not parse end: '%v'.", err)
+		}
+
+		if err == nil {
+			q = dateRangeQuery(start, end, q)
+		}
+	}
+
 	q = sortQuery(parseSortParam(ctx.QueryParam("sort"), "id", "amount", "date"), q)
-	limit, q = limitQuery(ctx.QueryParam("limit"), q)
-	offset, q = offsetQuery(ctx.QueryParam("offset"), q)
+
+	limit, q = limitQuery(params.Limit, q)
+	offset, q = offsetQuery(params.Offset, q)
 	q.Find(&expenditures)
 	if q.Error != nil {
 		log.Errorf("ExpenditureController::Index Failed to execute query: %v", q.Error)
