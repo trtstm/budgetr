@@ -19,7 +19,7 @@ type colSort struct {
 }
 
 func parseSortParam(param string, validCols ...string) *colSort {
-	parts := strings.Split(param, "|")
+	parts := strings.Split(param, "-")
 	if len(parts) == 0 {
 		return nil
 	}

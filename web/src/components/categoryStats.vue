@@ -20,6 +20,8 @@
       </div>
     </div>
 
+    <expenditures-table v-bind:expenditures="expenditures"></expenditures-table>
+
   </div>
 </template>
 
@@ -31,6 +33,8 @@ import * as _ from 'lodash';
 import '@/static/vendor/bootstrap-daterangepicker/daterangepicker.js';
 import '@/static/vendor/bootstrap-daterangepicker/daterangepicker.css';
 
+import expendituresTable from './expendituresTable.vue';
+
 import api from '@/api';
 
 interface CategoryStats extends Vue {
@@ -40,8 +44,9 @@ interface CategoryStats extends Vue {
   toMonthView(month:moment.Moment) : void;
   start: moment.Moment;
   end: moment.Moment;
-  stats: Array<any>,
-  title: string,
+  stats: Array<any>;
+  title: string;
+  expenditures: Array<any>;
 }
 
 export default {
@@ -52,9 +57,10 @@ export default {
       end: null,
       stats: [],
       title: '',
+      expenditures: [],
     };
   },
-
+  components: {expendituresTable},
   mounted () {
     var self = this;
 
@@ -96,9 +102,14 @@ export default {
     toDayView (day: moment.Moment) {
       let self = this;
       self.title = day.format('LL');
-      api.getCategoryStats({start: day, end: moment(day).add(1, 'day').startOf('day')})
+      let end = moment(day).add(1, 'days').startOf('day');
+      api.getCategoryStats({start: day, end: end})
       .then((stats) => {
         self.initStats(stats);
+        api.getExpenditures({start: day, end: end, sort: 'date', order:'desc'})
+        .then((expenditures) => {
+          self.expenditures = expenditures.data;
+        });
       })
     },
     toWeekView (week: moment.Moment) {
@@ -109,14 +120,23 @@ export default {
       api.getCategoryStats({start: week, end: end})
       .then((stats) => {
         self.initStats(stats);
+        api.getExpenditures({start: week, end: end, sort: 'date', order:'desc'})
+        .then((expenditures) => {
+          self.expenditures = expenditures.data;
+        });
       })
     },
     toMonthView (month: moment.Moment) {
       let self = this;
+      let end = moment(month).add(1, 'month').startOf('month');
       self.title = month.format('MMMM, YYYY');
-      api.getCategoryStats({start: month, end: moment(month).add(1, 'month').startOf('month')})
+      api.getCategoryStats({start: month, end: end})
       .then((stats) => {
         self.initStats(stats);
+        api.getExpenditures({start: month, end: end, sort: 'date', order:'desc'})
+        .then((expenditures) => {
+          self.expenditures = expenditures.data;
+        });
       })
     },
   },

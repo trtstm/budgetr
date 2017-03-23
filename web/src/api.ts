@@ -25,12 +25,21 @@ let endpoints = {
 };
 
 class Api {
-    getExpenditures(args: { start: moment.Moment, end: moment.Moment }): Promise<Results<Expenditure>> {
+    getExpenditures(args: { start: moment.Moment, end: moment.Moment, sort?: string, order?: string }): Promise<Results<Expenditure>> {
+        let params: any =  {};
+        params.start = args.start.format();
+        params.end = args.end.format();
+
+        if(args.sort) {
+            params.sort = args.sort;
+        }
+
+        if(args.order) {
+            params.sort += '-' + args.order;
+        }
+
         return this.logFailure('getExpenditures', axios.get(endpoints.expenditures, {
-            params: {
-                start: (args.start.format()),
-                end: (args.end.format()),
-            }
+            params: params,
         }).then((response: any) => {
             response.data.data = _.map(response.data.data, (raw: any) => {
                 return this.transformExpenditure(raw);

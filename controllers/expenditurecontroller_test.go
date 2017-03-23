@@ -181,7 +181,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		Convey("Sorting on ascending id.", t, func() {
-			r := httptest.NewRequest("GET", "/api/expenditures?sort=id|asc", nil)
+			r := httptest.NewRequest("GET", "/api/expenditures?sort=id-asc", nil)
 			w := httptest.NewRecorder()
 			c := e.NewContext(r, w)
 			So(ExpenditureController.Index(c), ShouldBeNil)
@@ -199,7 +199,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		Convey("Sorting on descending id.", t, func() {
-			r := httptest.NewRequest("GET", "/api/expenditures?sort=id|DESC", nil)
+			r := httptest.NewRequest("GET", "/api/expenditures?sort=id-DESC", nil)
 			w := httptest.NewRecorder()
 			c := e.NewContext(r, w)
 			So(ExpenditureController.Index(c), ShouldBeNil)
@@ -217,7 +217,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		Convey("Sorting on descending amount.", t, func() {
-			r := httptest.NewRequest("GET", "/api/expenditures?sort=amount|desc", nil)
+			r := httptest.NewRequest("GET", "/api/expenditures?sort=amount-desc", nil)
 			w := httptest.NewRecorder()
 			c := e.NewContext(r, w)
 			So(ExpenditureController.Index(c), ShouldBeNil)
@@ -235,7 +235,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		Convey("Sorting on ascending amount.", t, func() {
-			r := httptest.NewRequest("GET", "/api/expenditures?sort=amount|asc", nil)
+			r := httptest.NewRequest("GET", "/api/expenditures?sort=amount-asc", nil)
 			w := httptest.NewRecorder()
 			c := e.NewContext(r, w)
 			So(ExpenditureController.Index(c), ShouldBeNil)
@@ -253,7 +253,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		Convey("Sorting on ascending date.", t, func() {
-			r := httptest.NewRequest("GET", "/api/expenditures?sort=date|ASC", nil)
+			r := httptest.NewRequest("GET", "/api/expenditures?sort=date-ASC", nil)
 			w := httptest.NewRecorder()
 			c := e.NewContext(r, w)
 			So(ExpenditureController.Index(c), ShouldBeNil)
@@ -271,7 +271,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		Convey("Sorting on descending date.", t, func() {
-			r := httptest.NewRequest("GET", "/api/expenditures?sort=DATE|desc", nil)
+			r := httptest.NewRequest("GET", "/api/expenditures?sort=DATE-desc", nil)
 			w := httptest.NewRecorder()
 			c := e.NewContext(r, w)
 			So(ExpenditureController.Index(c), ShouldBeNil)
@@ -376,7 +376,7 @@ func TestExpenditureControllerIndex(t *testing.T) {
 		})
 
 		dateRange := url.Values{}
-		dateRange.Set("sort", "date|desc")
+		dateRange.Set("sort", "date-desc")
 
 		tests := []test{}
 
