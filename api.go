@@ -23,5 +23,8 @@ func startAPI() {
 	r.POST("/expenditures/:id", controllers.ExpenditureController.Update)
 	r.DELETE("/expenditures/:id", controllers.ExpenditureController.Delete)
 	r.POST("/expenditures", controllers.ExpenditureController.Create)
+
+	r.GET("/stats/categories", controllers.CategoryStatsController.Index)
+
 	e.Logger.Fatal(e.Start(config.Config.Hostname + ":" + strconv.Itoa(int(config.Config.Port))))
 }
