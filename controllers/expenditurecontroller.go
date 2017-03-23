@@ -59,22 +59,15 @@ func sortQuery(cs *colSort, q *gorm.DB) *gorm.DB {
 }
 
 func limitQuery(limit uint, q *gorm.DB) (uint, *gorm.DB) {
-	n := limit
-	if n == 0 {
-		n = 100
+	if limit > 100 {
+		limit = 100
 	}
 
-	if n > 100 {
-		n = 100
-	}
-
-	return uint(n), q.Limit(uint(n))
+	return limit, q.Limit(limit)
 }
 
 func offsetQuery(offset uint, q *gorm.DB) (uint, *gorm.DB) {
-	n := offset
-
-	return uint(n), q.Offset(uint(n))
+	return offset, q.Offset(offset)
 }
 
 func dateRangeQuery(start time.Time, end time.Time, q *gorm.DB) *gorm.DB {
@@ -87,32 +80,40 @@ type expenditureController struct {
 func (c *expenditureController) Index(ctx echo.Context) error {
 	expenditures := []*models.Expenditure{}
 
-	params := &struct {
-		Limit  uint `json:"limit" form:"limit" query:"limit"`
-		Offset uint `json:"offset" form:"offset" query:"offset"`
-	}{}
+	var limit uint = 100
+	var offset uint
 
-	if err := ctx.Bind(params); err != nil {
-		log.Infof("ExpenditureController::Index Could not bind params: '%v'.", err)
-		return ctx.NoContent(http.StatusBadRequest)
+	if tmp, err := strconv.ParseUint(ctx.QueryParam("limit"), 10, 64); err == nil {
+		limit = uint(tmp)
 	}
 
-	var limit uint
-	var offset uint
+	if tmp, err := strconv.ParseUint(ctx.QueryParam("offset"), 10, 64); err == nil {
+		offset = uint(tmp)
+	}
 
 	q := db.DB.Preload("Category")
 
 	var start time.Time
 	var end time.Time
-	if len(ctx.QueryParam("start")) > 0 && len(ctx.QueryParam("end")) > 0 {
+	var hasStart = len(ctx.QueryParam("start")) > 0
+	var hasEnd = len(ctx.QueryParam("end")) > 0
+
+	if hasStart != hasEnd {
+		log.Infof("ExpenditureController::Index Start and end should always be given together.")
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if hasStart && hasEnd {
 		var err error
 		start, err = time.Parse(time.RFC3339, ctx.QueryParam("start"))
 		if err != nil {
 			log.Infof("ExpenditureController::Index Could not parse start: '%v'.", err)
+			return ctx.NoContent(http.StatusBadRequest)
 		}
 		end, err = time.Parse(time.RFC3339, ctx.QueryParam("end"))
 		if err != nil {
 			log.Infof("ExpenditureController::Index Could not parse end: '%v'.", err)
+			return ctx.NoContent(http.StatusBadRequest)
 		}
 
 		if err == nil {
@@ -122,8 +123,8 @@ func (c *expenditureController) Index(ctx echo.Context) error {
 
 	q = sortQuery(parseSortParam(ctx.QueryParam("sort"), "id", "amount", "date"), q)
 
-	limit, q = limitQuery(params.Limit, q)
-	offset, q = offsetQuery(params.Offset, q)
+	limit, q = limitQuery(limit, q)
+	offset, q = offsetQuery(offset, q)
 	q.Find(&expenditures)
 	if q.Error != nil {
 		log.Errorf("ExpenditureController::Index Failed to execute query: %v", q.Error)
@@ -141,7 +142,7 @@ func (c *expenditureController) Index(ctx echo.Context) error {
 func (c *expenditureController) Show(ctx echo.Context) error {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		log.Infof("ExpenditureController::Show Could not parse id `%d`: '%v'.", id, err)
+		log.Infof("ExpenditureController::Show Could not parse id `%s`: '%v'.", ctx.Param("id"), err)
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -201,7 +202,7 @@ func (c *expenditureController) Update(ctx echo.Context) error {
 	}
 
 	expenditure := &models.Expenditure{}
-	if q := db.DB.First(expenditure, "id = ?", id); q.Error != nil {
+	if q := db.DB.Preload("Category").First(expenditure, "id = ?", id); q.Error != nil {
 		if q.RecordNotFound() {
 			log.Infof("ExpenditureController::Update Expenditure '%d' not found.", id)
 			return ctx.NoContent(http.StatusNotFound)
@@ -213,8 +214,8 @@ func (c *expenditureController) Update(ctx echo.Context) error {
 
 	params := &struct {
 		Date     time.Time `json:"date" form:"date"`
-		Amount   float64   `json:"amount" form:"amount"`
-		Category string    `json:"category" form:"category"`
+		Amount   *float64  `json:"amount" form:"amount"`
+		Category *string   `json:"category" form:"category"`
 	}{}
 
 	if err := ctx.Bind(params); err != nil {
@@ -222,19 +223,33 @@ func (c *expenditureController) Update(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	var category *models.Category
+	// Should have been preloaded.
+	category := expenditure.Category
 
-	params.Category = strings.TrimSpace(params.Category)
-	if len(params.Category) != 0 {
-		category = &models.Category{Name: params.Category}
-		if q := db.DB.FirstOrCreate(category, "name = ?", category.Name); q.Error != nil {
-			log.Errorf("ExpenditureController::Update FirstOrCreate failed: '%v'.", q.Error)
-			return ctx.NoContent(http.StatusInternalServerError)
+	if params.Category != nil {
+		*params.Category = strings.TrimSpace(*params.Category)
+		if len(*params.Category) != 0 {
+			category = &models.Category{Name: *params.Category}
+			if q := db.DB.FirstOrCreate(category, "name = ?", category.Name); q.Error != nil {
+				log.Errorf("ExpenditureController::Update FirstOrCreate failed: '%v'.", q.Error)
+				return ctx.NoContent(http.StatusInternalServerError)
+			}
+		} else {
+			// Empty category given. So delete it.
+			expenditure.CategoryID = 0
+			category = nil
 		}
 	}
 
-	expenditure.Amount = params.Amount
-	expenditure.Date = params.Date
+	log.Infof("ExpenditureController::Update Original: %+v.", expenditure)
+
+	if params.Amount != nil {
+		expenditure.Amount = *params.Amount
+	}
+	if !params.Date.IsZero() {
+		expenditure.Date = params.Date
+	}
+
 	expenditure.Category = category
 
 	q := db.DB.Save(expenditure)
@@ -248,7 +263,7 @@ func (c *expenditureController) Update(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusNotFound)
 	}
 
-	log.Infof("ExpenditureController::Update Expenditure updated: %+v.", expenditure)
+	log.Infof("ExpenditureController::Update Updated: %+v.", expenditure)
 	return ctx.JSON(http.StatusOK, TransformExpenditure(expenditure)[0])
 }
 

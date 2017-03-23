@@ -6,5 +6,5 @@ import "github.com/jinzhu/gorm"
 type Category struct {
 	gorm.Model
 
-	Name string `gorm:"not null,unique"`
+	Name string `gorm:"not null;unique"`
 }
