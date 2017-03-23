@@ -12,6 +12,14 @@
       </li>
     </ul>
 
+    <div class="row">
+      <div v-for="stat in stats" class="col-md-2">
+        <div class="square" v-bind:style="{'background-color': stat.color}">
+          <span class="stat-info">{{stat.name}}</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -19,12 +27,14 @@
 import Vue from "vue";
 import moment from 'moment';
 import * as $ from 'jquery';
+import * as _ from 'lodash';
 import '@/static/vendor/bootstrap-daterangepicker/daterangepicker.js';
 import '@/static/vendor/bootstrap-daterangepicker/daterangepicker.css';
 
 import api from '@/api';
 
 interface CategoryStats extends Vue {
+  initStats(stats:any) : void;
   toDayView(day:moment.Moment) : void;
   toWeekView(week:moment.Moment) : void;
   toMonthView(month:moment.Moment) : void;
@@ -73,12 +83,22 @@ export default {
   },
 
   methods: {
+    initStats (stats: any) {
+        for(let i = 0; i < stats.length; i++) {
+          let h = i * 360/stats.length;
+          let s = 100;
+          let l = 50;
+          stats[i].color = 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+        }
+
+        this.stats = stats;
+    },
     toDayView (day: moment.Moment) {
       let self = this;
       self.title = day.format('LL');
       api.getCategoryStats({start: day, end: moment(day).add(1, 'day').startOf('day')})
       .then((stats) => {
-        self.stats = stats;
+        self.initStats(stats);
       })
     },
     toWeekView (week: moment.Moment) {
@@ -88,7 +108,7 @@ export default {
       self.title = 'Van ' + week.format('LL') + ' tot ' + end.format('LL');
       api.getCategoryStats({start: week, end: end})
       .then((stats) => {
-        self.stats = stats;
+        self.initStats(stats);
       })
     },
     toMonthView (month: moment.Moment) {
@@ -96,7 +116,7 @@ export default {
       self.title = month.format('MMMM, YYYY');
       api.getCategoryStats({start: month, end: moment(month).add(1, 'month').startOf('month')})
       .then((stats) => {
-        self.stats = stats;
+        self.initStats(stats);
       })
     },
   },
@@ -104,6 +124,17 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="scss" scoped>
+ .square {
+   width: 100%;
+   padding-top: 100%;
+   position: relative;
 
+   text-align: center;
+
+   .stat-info {
+     position: absolute;
+     top: 50%;
+   }
+ }
 </style>
