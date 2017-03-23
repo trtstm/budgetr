@@ -3,14 +3,14 @@ import Router from "vue-router";
 
 Vue.use(Router);
 
-import Hello from "@/components/hello";
+import CategoryStats from "@/components/categoryStats";
 
 export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Hello',
-      component: Hello,
+      name: 'CategoryStats',
+      component: CategoryStats,
     },
   ],
 });

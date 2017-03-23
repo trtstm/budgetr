@@ -10,11 +10,18 @@ interface Results<T> {
     data: Array<T>;
 }
 
+interface CategoryStat {
+    id: number;
+    name: string;
+    total: number;
+} 
+
 let root = '/api';
 
 let endpoints = {
     expenditures: root + '/expenditures',
     categories: root + '/categories',
+    categoryStats: root + '/stats/categories',
 };
 
 class Api {
@@ -55,6 +62,17 @@ class Api {
             name: category.getName(),
         }).then((response: any) => {
             return this.transformCategory(response.data);
+        }));
+    }
+
+    getCategoryStats(args: { start: moment.Moment, end: moment.Moment }): Promise<Array<CategoryStat>> {
+        return this.logFailure('getCategoryStats', axios.get(endpoints.categoryStats, {
+            params: {
+                start: (args.start.format()),
+                end: (args.end.format()),
+            }
+        }).then((response: any) => {
+            return response.data;
         }));
     }
 
