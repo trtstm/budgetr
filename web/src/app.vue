@@ -91,12 +91,14 @@ export default {
   mounted() {
     let self = this;
     new Flatpickr(this.$refs.dayPicker, {
+      disableMobile: true,
       onChange(dates) {
         self.$router.push({name: 'expenditure-index', params: {type: 'day'}, query: {start: moment(dates[0]).format()}});
       },
     });
 
     new Flatpickr(this.$refs.rangePicker, {
+      disableMobile: true,
       mode: 'range',
       onChange(dates) {
         if(dates.length < 2) return;
