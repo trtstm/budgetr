@@ -109,9 +109,23 @@ class Api {
     }
 
     generateExcel(ranges: any): Promise<void> {
-        return this.logFailure('generateExcel', axios.post(endpoints.generateExcel, ranges).then((response: any) => {
-            return this.transformCategory(response.data);
-        }));
+        let form = document.createElement('form');
+        form.action = endpoints.generateExcel;
+        form.method = 'post';
+        form.style.display = 'none';
+
+        let input = document.createElement('input')
+        input.name = 'ranges';
+        input.value = JSON.stringify(ranges);
+
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+
+        form.remove();
+
+        return Promise.resolve();
     }
 
     private logFailure(name: string, p: any): Promise<any> {

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -15,13 +16,22 @@ type exportController struct {
 }
 
 func (c *exportController) ExportExcel(ctx echo.Context) error {
+	timeStart := time.Now()
+
 	params := []struct {
-		Start time.Time `json:"start"`
-		End   time.Time `json:"end"`
-		Title string    `json:"title"`
+		Start time.Time `json:"start" form:"start"`
+		End   time.Time `json:"end" form:"end"`
+		Title string    `json:"title" form:"title"`
 	}{}
 
-	if err := ctx.Bind(&params); err != nil {
+	var err error
+	if len(ctx.FormValue("ranges")) != 0 {
+		err = json.Unmarshal([]byte(ctx.FormValue("ranges")), &params)
+	} else {
+		err = ctx.Bind(&params)
+	}
+
+	if err != nil {
 		log.Info("ExportController::ExportExcel Failed to bind params: %v", err)
 		return ctx.NoContent(http.StatusBadRequest)
 	}
@@ -60,7 +70,6 @@ func (c *exportController) ExportExcel(ctx echo.Context) error {
 	var sheet *xlsx.Sheet
 	var row *xlsx.Row
 	var cell *xlsx.Cell
-	var err error
 
 	file = xlsx.NewFile()
 	sheet, err = file.AddSheet("Uitgaves")
@@ -95,7 +104,10 @@ func (c *exportController) ExportExcel(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 
-	return ctx.File("export.xlsx")
+	elapsed := time.Since(timeStart)
+
+	log.Infof("ExportController::ExportExcel Generated excel in %s.", elapsed)
+	return ctx.Attachment("export.xlsx", "export.xlsx")
 }
 
 // ExportController for /exports endpoint.
