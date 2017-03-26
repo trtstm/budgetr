@@ -95,10 +95,5 @@ func cleanUp(config *Configuration) error {
 		config.Environment = EnvLocal
 	}
 
-	if len(config.Username) == 0 {
-		config.Username = "admin"
-		config.Password = ""
-	}
-
 	return nil
 }

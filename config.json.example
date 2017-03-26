@@ -2,5 +2,7 @@
   "hostname": "",
   "port": 8080,
   "database": "",
-  "log_level": "debug"
+  "log_level": "debug",
+  "username": "admin",
+  "password": "somepassword"
 }

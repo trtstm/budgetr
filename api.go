@@ -14,6 +14,15 @@ func startAPI() {
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	e.Use(middleware.GzipWithConfig(middleware.DefaultGzipConfig))
 
+	if config.Config.Username != "" {
+		e.Use(middleware.BasicAuth(func(username, password string, c echo.Context) bool {
+			if username == config.Config.Username && password == config.Config.Password {
+				return true
+			}
+			return false
+		}))
+	}
+
 	e.Static("/", "web/dist")
 
 	// Restricted group
