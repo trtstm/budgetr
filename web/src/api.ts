@@ -1,5 +1,4 @@
 import axios from 'axios';
-import _ from 'lodash';
 import moment from 'moment';
 
 import Expenditure from './expenditure';
@@ -14,7 +13,7 @@ interface CategoryStat {
     id: number;
     name: string;
     total: number;
-} 
+}
 
 let root = '/api';
 
@@ -22,26 +21,35 @@ let endpoints = {
     expenditures: root + '/expenditures',
     categories: root + '/categories',
     categoryStats: root + '/stats/categories',
+    generateExcel: root + '/exports/excel',
 };
 
 class Api {
-    getExpenditures(args: { start: moment.Moment, end: moment.Moment, sort?: string, order?: string }): Promise<Results<Expenditure>> {
-        let params: any =  {};
-        params.start = args.start.format();
-        params.end = args.end.format();
-
-        if(args.sort) {
+    getExpenditures(args: { start?: moment.Moment, end?: moment.Moment, sort?: string, order?: string, limit?: number, offset?: number }): Promise<Results<Expenditure>> {
+        let params: any = {};
+        if (args.start) {
+            params.start = args.start.format();
+        }
+        if (args.end) {
+            params.end = args.end.format();
+        }
+        if (args.sort) {
             params.sort = args.sort;
         }
-
-        if(args.order) {
+        if (args.limit) {
+            params.limit = args.limit;
+        }
+        if (args.offset) {
+            params.offset = args.offset;
+        }
+        if (args.order) {
             params.sort += '-' + args.order;
         }
 
         return this.logFailure('getExpenditures', axios.get(endpoints.expenditures, {
             params: params,
         }).then((response: any) => {
-            response.data.data = _.map(response.data.data, (raw: any) => {
+            response.data.data = response.data.data.map((raw: any) => {
                 return this.transformExpenditure(raw);
             });
 
@@ -56,14 +64,18 @@ class Api {
         };
 
         let category = expenditure.getCategory();
-        if(category !== null && category.getName() !== '') {
+        if (category !== null && category.getName() !== '') {
             params.category = category.getName();
         }
 
-        return this.logFailure('createExpenditure', axios.post(endpoints.expenditures,params)
-        .then((response: any) => {
-            return this.transformExpenditure(response.data);
-        }));
+        return this.logFailure('createExpenditure', axios.post(endpoints.expenditures, params)
+            .then((response: any) => {
+                return this.transformExpenditure(response.data);
+            }));
+    }
+
+    deleteExpenditure(expenditure: Expenditure): Promise<Expenditure> {
+        return this.logFailure('deleteExpenditure', axios.delete(endpoints.expenditures + '/' + expenditure.getId().toString()));
     }
 
     createCategory(category: Category): Promise<Category> {
@@ -71,6 +83,17 @@ class Api {
             name: category.getName(),
         }).then((response: any) => {
             return this.transformCategory(response.data);
+        }));
+    }
+
+    getCategories(): Promise<Results<Category>> {
+        return this.logFailure('getCategories', axios.get(endpoints.categories, {
+        }).then((response: any) => {
+            response.data.data = response.data.data.map((raw: any) => {
+                return this.transformCategory(raw);
+            });
+
+            return response.data;
         }));
     }
 
@@ -85,15 +108,27 @@ class Api {
         }));
     }
 
-    private logFailure(name: string, p: any): Promise<any> {
-        return p.catch((reason: any) => {
-            if (!reason || !reason.message) {
-                reason = { message: 'Something went wrong on the server.' };
+    generateExcel(ranges: any): Promise<void> {
+        return this.logFailure('generateExcel', axios.post(endpoints.generateExcel, ranges).then((response: any) => {
+            return this.transformCategory(response.data);
+        }));
+    }
 
-            }
-            console.log(name + ' failed: ' + reason.message);
-            return reason;
-        })
+    private logFailure(name: string, p: any): Promise<any> {
+        let q = new Promise((resolve, reject) => {
+            p.then((data) => {
+                resolve(data);
+            }).catch((reason: any) => {
+                if (!reason || !reason.message) {
+                    reason = { message: 'Something went wrong on the server.' };
+
+                }
+                console.log(name + ' failed: ' + reason.message);
+                reject(reason);
+            })
+        });
+
+        return q;
     }
 
 
@@ -105,7 +140,7 @@ class Api {
     private transformExpenditure(raw: any): Expenditure {
         let expenditure = new Expenditure(raw);
 
-        if(raw.category) {
+        if (raw.category) {
             let category = this.transformCategory(raw.category);
             expenditure.setCategory(category);
         }

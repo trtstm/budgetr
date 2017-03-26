@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"github.com/trtstm/budgetr/db"
 	"github.com/trtstm/budgetr/log"
 	"github.com/trtstm/budgetr/models"
 )
@@ -49,7 +48,7 @@ func (c *categoryStatsController) Index(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	q := db.DB.Table("expenditures").Joins("LEFT JOIN categories ON expenditures.category_id = categories.id").Group("expenditures.category_id").Select("categories.id as id, categories.name AS name, SUM(expenditures.amount) as total")
+	q := categoryStatsQuery()
 	if !start.IsZero() {
 		q = dateRangeQuery(start, end, q)
 	}

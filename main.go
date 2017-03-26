@@ -27,7 +27,7 @@ func main() {
 		config.Config = conf
 	}
 
-	logLevel := log.InfoLevel
+	var logLevel log.Level
 	switch config.Config.LogLevel {
 	case "debug":
 		logLevel = log.DebugLevel

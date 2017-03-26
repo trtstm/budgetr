@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import Entity from './entity';
 
 class Category extends Entity {

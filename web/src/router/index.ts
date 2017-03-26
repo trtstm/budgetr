@@ -3,14 +3,21 @@ import Router from "vue-router";
 
 Vue.use(Router);
 
-import CategoryStats from "@/components/categoryStats";
+import Home from "@/pages/home.vue";
+import ExpenditureIndex from "@/pages/expenditureIndex.vue";
+
 
 export default new Router({
   routes: [
     {
       path: '/',
-      name: 'CategoryStats',
-      component: CategoryStats,
+      name: 'home',
+      component: Home,
+    },
+    {
+      path: '/expenditure-index/:type',
+      name: 'expenditure-index',
+      component: ExpenditureIndex,
     },
   ],
 });

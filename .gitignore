@@ -1,3 +1,4 @@
 budgetr
 config.json
 *.sqlite
+*.xlsx

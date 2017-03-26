@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import moment from 'moment';
 
 import Entity from './entity';
@@ -13,7 +12,7 @@ class Expenditure extends Entity {
         }
 
         if (data.amount) {
-            this.amount = data.amount;
+            this.setAmount(data.amount);
         }
 
         if (data.date) {
@@ -26,7 +25,7 @@ class Expenditure extends Entity {
     }
 
     setAmount(amount: number) {
-        this.amount = amount;
+        this.amount = Number(amount);
     }
 
     getDate(): moment.Moment {
@@ -37,17 +36,17 @@ class Expenditure extends Entity {
         this.date = moment(date);
     }
 
-    setCategory(category: Category|null) {
+    setCategory(category: Category | null) {
         this.category = category;
     }
 
-    getCategory(): Category|null {
+    getCategory(): Category | null {
         return this.category;
     }
 
     private amount: number = 0;
     private date: moment.Moment = moment();
-    private category: Category|null = null;
+    private category: Category | null = null;
 }
 
 export default Expenditure;

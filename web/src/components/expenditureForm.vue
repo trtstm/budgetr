@@ -6,7 +6,7 @@
     
         <input type="text"
                v-model="amount">
-
+    
         <input type="text"
                v-model="category">
     
@@ -17,7 +17,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import _ from 'lodash';
 import moment from 'moment';
 
 import api from '@/api';
