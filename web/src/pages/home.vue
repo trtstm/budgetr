@@ -9,8 +9,7 @@
           <label for="first-name">Uitgave</label>
           <input ref="amountInput"
                  class="pure-u-1"
-                 type="number"
-                 step="any">
+                 type="text">
         </div>
   
         <div class="pure-u-1-2 pure-u-lg-1-2">
@@ -44,6 +43,7 @@
 import Vue from "vue";
 
 import moment from 'moment';
+import {Parser} from 'expr-eval';
 
 import ExpendituresTable from '@/components/expendituresTable.vue';
 
@@ -111,7 +111,12 @@ export default {
             let self = this;
             this.submitting = true;
 
-            let amount = this.$refs.amountInput.value;
+            let amount = 0;
+            try {
+              amount = Parser.evaluate(this.$refs.amountInput.value.replace(/,/g, '.'));
+            } catch(err) {
+
+            }
             let category = this.$refs.categoryInput.value;
 
             let expenditure = new Expenditure({ amount: amount, date: moment() });

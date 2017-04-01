@@ -18,9 +18,10 @@
             <tbody>
                 <tr v-for="e in capped">
                     <td>{{formatDate(e.getDate())}}</td>
-                    <td>{{e.getAmount()}}</td>
+                    <td>{{e.getAmount().toFixed(2)}}</td>
                     <td>{{categoryName(e.getCategory())}}</td>
-                    <td><a v-on:click="deleteExpenditure(e)"><i class="fa fa-fw fa-trash-o"></i></a></td>
+                    <td><a class="expenditure-trash"
+                           v-on:click="deleteExpenditure(e)"><i class="fa fa-fw fa-trash-o"></i></a></td>
                 </tr>
             </tbody>
         </table>
@@ -93,3 +94,8 @@ export default {
 };
 </script>
 
+<style scoped>
+.expenditure-trash {
+    cursor: pointer;
+}
+</style>
