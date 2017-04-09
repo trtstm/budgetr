@@ -29,6 +29,7 @@ func startAPI() {
 	r := e.Group("/api")
 
 	r.GET("/categories", controllers.CategoryController.Index)
+	r.POST("/categories/:id", controllers.CategoryController.Update)
 
 	r.GET("/expenditures", controllers.ExpenditureController.Index)
 	r.GET("/expenditures/:id", controllers.ExpenditureController.Show)

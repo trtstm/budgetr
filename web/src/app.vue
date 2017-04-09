@@ -3,24 +3,32 @@
        class="">
     <div class="pure-menu pure-menu-horizontal nav-menu">
       <ul class="pure-menu-list">
-        <li class="pure-menu-item pure-menu-selected">
+        <li class="pure-menu-item">
           <router-link class="pure-menu-link"
-                       :to="{name: 'home'}">Home</router-link>
+                       :to="{name: 'home'}"
+                       exact>Home</router-link>
+        </li>
+        <li class="pure-menu-item">
+          <router-link class="pure-menu-link"
+                       :to="{name: 'categories'}">Categorieën</router-link>
         </li>
         <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
           <a class="pure-menu-link">Uitgaves</a>
           <ul class="pure-menu-children">
             <li class="pure-menu-item">
               <router-link class="pure-menu-link"
-                           :to="{name: 'expenditure-index', params: {type: 'day'}, query: {start: now.format()}}">Vandaag</router-link>
+                           :to="{name: 'expenditure-index', params: {type: 'day'}, query: {start: now.format()}}"
+                           exact>Vandaag</router-link>
             </li>
             <li class="pure-menu-item">
               <router-link class="pure-menu-link"
-                           :to="{name: 'expenditure-index', params: {type: 'range'}, query: {start: moment(now).startOf('week').format(), end: moment(now).endOf('week').format()}}">Deze week</router-link>
+                           :to="{name: 'expenditure-index', params: {type: 'range'}, query: {start: moment(now).startOf('week').format(), end: moment(now).endOf('week').format()}}"
+                           exact>Deze week</router-link>
             </li>
             <li class="pure-menu-item">
               <router-link class="pure-menu-link"
-                           :to="{name: 'expenditure-index', params: {type: 'range'}, query: {start: moment(now).startOf('month').format(), end: moment(now).endOf('month').format()}}">Deze maand</router-link>
+                           :to="{name: 'expenditure-index', params: {type: 'range'}, query: {start: moment(now).startOf('month').format(), end: moment(now).endOf('month').format()}}"
+                           exact>Deze maand</router-link>
             </li>
   
             <li class="pure-menu-item">

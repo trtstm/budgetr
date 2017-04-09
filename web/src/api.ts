@@ -86,6 +86,14 @@ class Api {
         }));
     }
 
+    updateCategory(category: Category): Promise<Category> {
+        return this.logFailure('updateCategory', axios.post(endpoints.categories + '/' + category.getId().toString(), {
+            name: category.getName(),
+        }).then((response: any) => {
+            return this.transformCategory(response.data);
+        }));
+    }
+
     getCategories(): Promise<Results<Category>> {
         return this.logFailure('getCategories', axios.get(endpoints.categories, {
         }).then((response: any) => {

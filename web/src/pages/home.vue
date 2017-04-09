@@ -93,6 +93,10 @@ export default {
             create: true,
             labelField: 'name',
             valueField: 'name',
+            sortField: {
+              field: 'name',
+              direction: 'asc',
+            },
           });
     },
     
