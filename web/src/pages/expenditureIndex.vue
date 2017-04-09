@@ -3,12 +3,12 @@
         <h2 class="page-title">Uitgaves</h2>
         <h3 class="sub-title">{{title}}</h3>
         <div class="pure-g">
-            <div class="pure-u-1 pure-u-md-3-4">
+            <div class="pure-u-1">
+                <stats-chart v-bind:stats="stats"></stats-chart>
+            </div>
+            <div class="pure-u-1">
                 <expenditures-table v-bind:expenditures="expenditures"
                                     v-on:expenditure-deleted="expenditureDeleted" />
-            </div>
-            <div class="pure-u-1 pure-u-md-1-4">
-                <stats-chart v-bind:stats="stats"></stats-chart>
             </div>
         </div>
     </div>
