@@ -3,10 +3,11 @@
         <h2 class="page-title">Uitgaves</h2>
         <h3 class="sub-title">{{title}}</h3>
         <div class="pure-g">
-            <div class="pure-u-1">
-                <stats-chart v-bind:stats="stats"></stats-chart>
+            <div class="pure-u-1 widget">
+                <category-stats-table v-bind:stats="stats"></category-stats-table>
             </div>
-            <div class="pure-u-1">
+
+            <div class="pure-u-1 widget">
                 <expenditures-table v-bind:expenditures="expenditures"
                                     v-on:expenditure-deleted="expenditureDeleted" />
             </div>
@@ -18,7 +19,7 @@
 import Vue from "vue";
 import moment from 'moment';
 
-import StatsChart from '@/components/statsChart.vue';
+import CategoryStatsTable from '@/components/categoryStatsTable.vue';
 import ExpendituresTable from '@/components/expendituresTable.vue';
 
 
@@ -26,7 +27,7 @@ import api from '@/api';
 
 export default {
   name: 'expenditure-index',
-  components: {StatsChart, ExpendituresTable},
+  components: {CategoryStatsTable, ExpendituresTable},
   data () {
     return {
         type: '',
@@ -108,5 +109,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
-
+.widget {
+    margin-bottom: 30px;
+}
 </style>
