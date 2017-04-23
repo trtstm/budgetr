@@ -4,7 +4,7 @@
           <thead>
               <tr>
                   <th v-on:click="sortOrder = !sortOrder; sorter = sortName(sortOrder)">Categorie <i class="fa" v-bind:class="{'fa-sort-desc': sortOrder, 'fa-sort-asc': !sortOrder}" aria-hidden="true"></i></th>
-                  <th v-on:click="sortOrder = !sortOrder; sorter = sortName(sortOrder)">Totaal <i class="fa" v-bind:class="{'fa-sort-desc': sortOrder, 'fa-sort-asc': !sortOrder}" aria-hidden="true"></i></th>
+                  <th v-on:click="sortOrder = !sortOrder; sorter = sortTotal(sortOrder)">Totaal <i class="fa" v-bind:class="{'fa-sort-desc': sortOrder, 'fa-sort-asc': !sortOrder}" aria-hidden="true"></i></th>
               </tr>
           </thead>
   
