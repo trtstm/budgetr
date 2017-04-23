@@ -15,6 +15,7 @@
         <div class="pure-u-1-2 pure-u-lg-1-2">
           <label for="last-name">Category</label>
           <select ref="categoryInput"
+          placeholder="Kies een categorie"
                   class="pure-u-1">
           </select>
         </div>
@@ -122,11 +123,13 @@ export default {
 
             }
             let category = this.$refs.categoryInput.value;
+            if(category.length === 0) {
+              this.submitting = false;
+              return;
+            }
 
             let expenditure = new Expenditure({ amount: amount, date: moment() });
-            if (category.length > 0) {
-                expenditure.setCategory(new Category({ name: category }));
-            }
+            expenditure.setCategory(new Category({ name: category }));
 
             api.createExpenditure(expenditure)
                 .then((e) => {
