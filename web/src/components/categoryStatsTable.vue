@@ -11,7 +11,7 @@
           <tbody>
               <tr v-for="stat in sortedStats">
                 <td>{{stat.name}}</td>
-                <td>{{stat.total}}</td>
+                <td>{{stat.total.toFixed(2)}}</td>
               </tr>
           </tbody>
       </table>
